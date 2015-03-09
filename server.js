@@ -1,62 +1,53 @@
 var express = require('express'),
-    stylus = require('stylus'),
-    logger = require('morgan'),
-    bodyparser = require('body-parser'),
-    mongoose = require('mongoose');;
+    mongoose = require('mongoose'),
+    passport = require('passport'),
+    LocalStrategy = require('passport-local').Strategy;
 
 var env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var app = express();
 
-function compile(str, path) {
-  return stylus(str).set('filename', path);
-}
+var config = require('./server/config/config')[env];
 
-app.set('views', __dirname + '/server/views');
+require('./server/config/express')(app, config);
 
-app.set('view engine', 'jade');
+require('./server/config/mongoose')(config);
 
-app.use(logger('dev'));
-app.use(bodyparser());
-app.use(stylus.middleware(
-  {
-    src: __dirname + '/public',
-    compile: compile   
-  }
+var User = mongoose.model('User');
+
+passport.use(new LocalStrategy (
+  function (username, password, done) {
+    User.findOne({username:username}).exec( function(err, user) {
+      if(user && user.authenticate(password)) {
+        console.log(user);
+        return done(null, user);
+      } else {
+        console.log('esfsd');
+        return done(null, false);
+      }
+    });
+ }
 ));
 
-app.use(express.static( __dirname + '/public'));
-
-if(env === 'development') {
-  mongoose.connect('mongodb://localhost/test');
-} else {
-  mongoose.connect('mongodb://cz:kit32sum@ds051851.mongolab.com:51851/test1');
-}
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error'));
-db.once('open', function callback() {
-  console.log('test db opened');
+passport.serializeUser(function(user, done) {
+  if(user) {
+    done(null, user._id);
+  }
 });
 
-var messageSchema = mongoose.Schema({message: String});
-var Message = mongoose.model('Message', messageSchema);
-var mongoMessage; 
-Message.findOne().exec(function(err, messageDoc) {
-  mongoMessage = messageDoc.message;
+passport.deserializeUser(function(id, done) {
+ User.findOne({_id:id}).exec(function(err,user) {
+   if (user) {
+     return done(null, user);
+   } else {
+     return done(null, false);
+   }
+ });  
 });
 
-app.get('/partials/:partialPath', function (req, res) {
-  res.render('partials/' + req.params.partialPath);
-});
+require('./server/config/routes')(app);
 
-app.get('*', function(req, res) {
-  res.render('index',{
-    mongoMessage: mongoMessage
-  }); 
-});
-
-var port = process.env.PORT || 3030;
-app.listen(port);
-console.log('Listening to port ' + port + '...');
+app.listen(config.port);
+console.log('Listening to port ' + config.port + '...');
 
 
