@@ -1,24 +1,25 @@
+// Handles log in and log out when the commands are given
 angular.module('app').factory('mvAuth', function($http, mvIdentity, $q) {
   return {
     authenticateUser: function(username, password) {
-      var dfd = $q.defer();
+      var dd = $q.defer();
       $http.post('/login', {username:username, password:password}).then(function(response) {
       if(response.data.success) {
         mvIdentity.currentUser = response.data.user;
-        dfd.resolve(true);
+        dd.resolve(true);
       } else {
-        dfd.resolve(false);
+        dd.resolve(false);
       }
       });
-      return dfd.promise;
+      return dd.promise;
     },
     logoutUser: function() {
-      var dfd = $q.defer();
+      var dd = $q.defer();
       $http.post('/logout', {logout: true}).then(function () {
         mvIdentity.currentUser = undefined;
-       dfd.resolve();
+       dd.resolve();
       });
-      return dfd.promise;
+      return dd.promise;
     }
   }
 });
