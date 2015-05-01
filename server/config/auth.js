@@ -1,3 +1,4 @@
+// Handles authentication via passport
 var passport = require('passport');
 
 exports.authenticate = function(req, res, next) {

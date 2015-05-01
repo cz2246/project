@@ -1,3 +1,4 @@
+// Configures paths for server and local development views
 var path = require('path');
 var rootPath = path.normalize( __dirname + '/../../');
 

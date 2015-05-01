@@ -1,3 +1,5 @@
+// Mongoose schemas, hard coded profiles for test purposes
+
 var mongoose = require('mongoose'),
     crypto = require('crypto');
 

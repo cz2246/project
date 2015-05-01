@@ -1,3 +1,5 @@
+// Handles routing via auth
+
 var auth = require('./auth');
 
 module.exports = function(app) {

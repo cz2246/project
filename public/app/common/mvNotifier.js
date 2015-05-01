@@ -1,3 +1,4 @@
+// Notifiers using toastr
 angular.module('app').value('mvToastr', toastr);
 
 angular.module('app').factory('mvNotifier', function(mvToastr) {
